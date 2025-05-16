@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admin-web
+  template:
+    metadata:
+      labels:
+        app: admin-web
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "admin-web"
+        dapr.io/app-port: "5003"
+    spec:
+      containers:
+      - name: admin-web
+        image: admin-web:latest
+        ports:
+        - containerPort: 5003
+        env:
+        - name: DB_HOST
+          value: "postgres-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-web-service
+spec:
+  selector:
+    app: admin-web
+  ports:
+  - port: 5003
+    targetPort: 5003
+  type: LoadBalancer

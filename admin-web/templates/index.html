@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cab Booking Admin Dashboard</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <h2>Users</h2>
+    <table>
+        <tr><th>User ID</th><th>Name</th><th>Email</th></tr>
+        {% for user in users %}
+        <tr><td>{{ user[0] }}</td><td>{{ user[1] }}</td><td>{{ user[2] }}</td></tr>
+        {% endfor %}
+    </table>
+    <h2>Drivers</h2>
+    <table>
+        <tr><th>Driver ID</th><th>Name</th></tr>
+        {% for driver in drivers %}
+        <tr><td>{{ driver[0] }}</td><td>{{ driver[1] }}</td></tr>
+        {% endfor %}
+    </table>
+    <h2>Rides</h2>
+    <table>
+        <tr><th>Ride ID</th><th>User ID</th><th>Status</th><th>Pickup</th><th>Dropoff</th></tr>
+        {% for ride in rides %}
+        <tr><td>{{ ride.ride_id }}</td><td>{{ ride.user_id }}</td><td>{{ ride.status }}</td><td>{{ ride.pickup }}</td><td>{{ ride.dropoff }}</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

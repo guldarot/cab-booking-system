@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        env:
+        - name: POSTGRES_USER
+          value: "user"
+        - name: POSTGRES_PASSWORD
+          value: "password"
+        - name: POSTGRES_DB
+          value: "cab_booking"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: init-db
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-db
+        configMap:
+          name: init-db-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-config
+data:
+  init_db.sql: |
+    CREATE TABLE IF NOT EXISTS users (
+        user_id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS drivers (
+        driver_id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS rides (
+        ride_id VARCHAR(50) PRIMARY KEY,
+        user_id VARCHAR(50) REFERENCES users(user_id),
+        driver_id VARCHAR(50) REFERENCES drivers(driver_id),
+        pickup_location VARCHAR(200),
+        dropoff_location VARCHAR(200),
+        status VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );

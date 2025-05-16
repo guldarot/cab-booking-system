@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  user-api:
+    build: ./user-api
+    ports:
+      - "5001:5001"
+    environment:
+      - DB_HOST=postgres
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    command: dapr run --app-id user-api --app-port 5001 --dapr-http-port 3501 -- python3 app.py
+
+  driver-api:
+    build: ./driver-api
+    ports:
+      - "5002:5002"
+    environment:
+      - DB_HOST=postgres
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    command: dapr run --app-id driver-api --app-port 5002 --dapr-http-port 3502 -- python3 app.py
+
+  admin-web:
+    build: ./admin-web
+    ports:
+      - "5003:5003"
+    environment:
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    command: dapr run --app-id admin-web --app-port 5003 --dapr-http-port 3503 -- python3 app.py
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cab_booking
+    volumes:
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    ports:
+      - "5432:5432"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports:
+      - "2181:2181"
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
